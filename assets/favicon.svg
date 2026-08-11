@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Marca centrada num quadrado com fundo #0c0c0c: a aba do navegador pode
+     estar em tema claro, e o monograma sozinho em #f4f4f4 sumiria. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+  <rect width="640" height="640" rx="96" fill="#0c0c0c"/>
+  <!-- marca 557.34x334.4 a 82% = 457x274.2, centrada em 640: (91.51, 182.91) -->
+  <g fill="#f4f4f4" transform="translate(91.51 182.91) scale(0.82)">
+    <path d="M557.34,167.21v167.19h-55.74v-111.47h-111.47v1.96c0,60.48-49.03,109.52-109.52,109.52h-1.94v-55.74h.1c30.73,0,55.63-24.91,55.63-55.63v-.1h-55.74v-55.72h55.74V0h55.72v167.21h167.21Z"/>
+    <path d="M55.74,167.21h111.46v-55.74h55.74v222.93H0v-55.74h167.19v-55.74H0v-113.41C0,49.03,49.03,0,109.52,0h113.41v55.74h-111.39c-30.82,0-55.8,24.98-55.8,55.8v55.67Z"/>
+  </g>
+</svg>
