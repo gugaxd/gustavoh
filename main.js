@@ -73,7 +73,9 @@
       var gutter = parseFloat(getComputedStyle(track).paddingLeft) || 0;
       var contentEnd = last ? last.offsetLeft + last.offsetWidth + gutter : 0;
 
-      maxShift = Math.max(0, contentEnd - window.innerWidth);
+      // clientWidth, não innerWidth: innerWidth inclui a barra de rolagem e
+      // empurraria o último card para fora da margem direita.
+      maxShift = Math.max(0, contentEnd - document.documentElement.clientWidth);
       reel.style.height = (window.innerHeight + maxShift) + 'px';
     }
 
@@ -198,16 +200,24 @@
 
     function render() {
       var y = window.scrollY;
+      var k;
 
+      // Base = último span cujo início o scroll ainda alcança. Em telas altas
+      // a última seção inteira pode caber na dobra final e nunca ter um
+      // scrollTop próprio — aí quem faz o papel de cauda é a anterior.
       var i = 0;
-      for (var k = 0; k < spans.length; k++) if (y >= spans[k].start - 1) i = k;
+      for (k = 0; k < spans.length; k++) {
+        if (y >= spans[k].start - 1 && spans[k].start < maxScroll) i = k;
+      }
 
       var span = spans[i];
-      // Na última seção o scroll trava antes do fim do documento: normaliza
-      // pelo que ainda dá para rolar, senão o playhead nunca chega no fim.
-      var reach = i === spans.length - 1 ? maxScroll : span.end;
-      var frac = clamp((y - span.start) / Math.max(1, reach - span.start), 0, 1);
-      var p = clamp(span.offset + frac * span.share, 0, 1);
+      var tail = i === spans.length - 1 || spans[i + 1].start >= maxScroll;
+      // Na cauda o playhead precisa cobrir tudo o que sobrou da barra, senão
+      // trava antes do fim e o timecode nunca fecha no total.
+      var end = tail ? maxScroll : span.end;
+      var target = tail ? 1 : span.offset + span.share;
+      var frac = clamp((y - span.start) / Math.max(1, end - span.start), 0, 1);
+      var p = clamp(span.offset + frac * (target - span.offset), 0, 1);
 
       if (playhead) {
         playhead.style.transform = 'translate3d(' + (p * trackEl.clientWidth) + 'px,0,0)';
@@ -222,10 +232,15 @@
           pad(f % FPS);
       }
 
-      if (i !== active) {
+      // O clipe aceso é aquele sob o playhead, não o do scrollTop: assim a
+      // seção que só aparece na dobra final ainda acende quando ela domina a tela.
+      var a = 0;
+      for (k = 0; k < spans.length; k++) if (p >= spans[k].offset - 1e-6) a = k;
+
+      if (a !== active) {
         if (buttons[active]) buttons[active].classList.remove('is-active');
-        buttons[i].classList.add('is-active');
-        active = i;
+        buttons[a].classList.add('is-active');
+        active = a;
       }
     }
 

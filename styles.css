@@ -160,6 +160,8 @@ img, svg { display: block; max-width: 100%; }
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  max-width: calc(var(--maxw) + 2 * var(--gutter));
+  margin-inline: auto;
   padding: 1.4rem var(--gutter);
 }
 
@@ -269,16 +271,20 @@ img, svg { display: block; max-width: 100%; }
   margin-top: 2.6rem;
 }
 
+/* Compartilha a mesma caixa do .hero-inner, senão acima de --maxw o hint
+   fica colado no gutter e desalinha do eyebrow. */
 .hero-hint {
   position: relative;
   margin-top: auto;
+  margin-inline: auto;
   padding-top: 4rem;
+  width: 100%;
+  max-width: var(--maxw);
   font-family: var(--mono);
   font-size: .68rem;
   letter-spacing: .2em;
   text-transform: uppercase;
   color: var(--muted-2);
-  align-self: flex-start;
 }
 
 /* ── reel (carrossel escrubado pelo scroll) ────────────────── */
@@ -449,8 +455,10 @@ img, svg { display: block; max-width: 100%; }
 
 /* ── sobre ─────────────────────────────────────────────────── */
 
+/* O --maxw vale para a coluna de conteúdo, então a caixa que carrega o gutter
+   precisa somá-lo — senão a seção entra um gutter a mais que .contact. */
 .about {
-  max-width: var(--maxw);
+  max-width: calc(var(--maxw) + 2 * var(--gutter));
   margin-inline: auto;
   padding: clamp(6rem, 14vh, 11rem) var(--gutter);
   border-top: 1px solid var(--hairline);
@@ -573,7 +581,7 @@ img, svg { display: block; max-width: 100%; }
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  max-width: var(--maxw);
+  max-width: calc(var(--maxw) + 2 * var(--gutter));
   margin-inline: auto;
   padding: 1.6rem var(--gutter) 2.4rem;
   font-family: var(--mono);
