@@ -545,7 +545,7 @@ img, svg { display: block; max-width: 100%; }
   gap: 1px;
   margin-top: clamp(3.5rem, 9vh, 6rem);
   background: var(--hairline);
-  border-block: 1px solid var(--hairline);
+  border: 1px solid var(--hairline);
 }
 .channels li { background: var(--void); }
 
