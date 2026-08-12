@@ -130,7 +130,7 @@ img, svg { display: block; max-width: 100%; }
 .btn--solid {
   background: var(--magenta);
   border-color: var(--magenta);
-  color: var(--void);
+  color: var(--paper);
 }
 .btn--solid:hover,
 .btn--solid:focus-visible {
@@ -287,7 +287,7 @@ img, svg { display: block; max-width: 100%; }
   color: var(--muted-2);
 }
 
-/* ── reel (carrossel escrubado pelo scroll) ────────────────── */
+/* ── reel / coverflow ──────────────────────────────────────── */
 
 .reel { position: relative; }
 
@@ -297,14 +297,9 @@ img, svg { display: block; max-width: 100%; }
   height: calc(100svh - var(--bar-h));
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: clamp(1.25rem, 3vh, 2.25rem);
-  padding-block: clamp(4.5rem, 9vh, 6.5rem) clamp(2rem, 5vh, 4rem);
+  gap: clamp(1rem, 2.4vh, 1.75rem);
+  padding-block: clamp(4.5rem, 9vh, 6.5rem) clamp(1.75rem, 4vh, 3rem);
   overflow: hidden;
-
-  /* Todos os clipes partem da mesma altura de mídia — só a largura muda,
-     como numa bin: a proporção do arquivo é lida pela forma. */
-  --mh: clamp(170px, 38vh, 400px);
 }
 
 .reel-head {
@@ -351,107 +346,225 @@ img, svg { display: block; max-width: 100%; }
 .tbtn:focus-visible { border-color: var(--magenta); color: var(--magenta); }
 .tbtn:disabled { opacity: .28; cursor: default; }
 
-.reel-track {
-  display: flex;
-  align-items: flex-start;
-  gap: clamp(1rem, 2.2vw, 2rem);
-  padding-inline: var(--gutter);
-  will-change: transform;
+/* Estado base = faixa rolável comum. É o que aparece sem JS e sob movimento
+   reduzido; o coverflow é uma camada por cima, não um pré-requisito. */
+.coverflow {
+  position: relative;
+  flex: 1;
+  min-height: 0;
 }
 
-.clip { flex: 0 0 auto; }
-.clip--916 { width: calc(var(--mh) * 9 / 16); }
-.clip--45  { width: calc(var(--mh) * 4 / 5); }
-.clip--11  { width: var(--mh); }
-.clip--169 { width: calc(var(--mh) * 16 / 9); }
-
-.clip-card {
-  display: block;
-  color: inherit;
-  text-decoration: none;
-  border: 1px solid var(--hairline);
-  background: var(--surface);
-  transition: border-color .25s var(--ease), background-color .25s var(--ease);
-}
-
-.clip-bar {
+.cf-track {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: .55rem .7rem;
-  border-bottom: 1px solid var(--hairline);
-  font-family: var(--mono);
-  font-size: .62rem;
-  letter-spacing: .08em;
-  color: var(--muted-2);
-  transition: border-color .25s var(--ease);
+  gap: clamp(1rem, 2.2vw, 2rem);
+  height: 100%;
+  padding-inline: var(--gutter);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
 }
-.clip-file { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.clip-ratio { flex-shrink: 0; color: var(--muted); }
+.cf-track::-webkit-scrollbar { display: none; }
 
-.clip-media {
+.cf-item {
+  flex: 0 0 auto;
+  width: min(70vw, 420px);
+  scroll-snap-align: center;
+}
+
+.cf-frame {
   position: relative;
-  display: block;
   overflow: hidden;
+  aspect-ratio: 16 / 9;
   background: var(--surface-2);
-}
-.clip-media svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.clip-media { height: var(--mh); }
-
-.clip-play {
-  position: absolute;
-  left: 50%; top: 50%;
-  width: 54px; height: 54px;
-  margin: -27px 0 0 -27px;
-  border: 1px solid var(--magenta);
-  opacity: 0;
-  transform: scale(.86);
-  transition: opacity .28s var(--ease), transform .28s var(--ease);
-}
-.clip-play::after {
-  content: "";
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-40%, -50%);
-  border-left: 9px solid var(--magenta);
-  border-block: 6px solid transparent;
-}
-
-.clip-foot {
-  display: block;
-  padding: .95rem .7rem 1.1rem;
-  border-top: 1px solid var(--hairline);
+  border: 1px solid var(--hairline);
   transition: border-color .25s var(--ease);
 }
-.clip-name {
+.cf-frame > svg,
+.cf-frame > img,
+.cf-frame > video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* No palco o vídeo é vitrine: os controles aparecem só no visualizador. */
+.cf-frame > video { pointer-events: none; }
+
+/* ── camada coverflow (adicionada pelo JS) ─────────────────── */
+
+.coverflow.is-coverflow .cf-track {
   display: block;
+  position: relative;
+  overflow: visible;
+  padding: 0;
+  scroll-snap-type: none;
+}
+
+.coverflow.is-coverflow .cf-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: auto;
+  will-change: transform, opacity;
+}
+
+.coverflow.is-coverflow .cf-frame {
+  aspect-ratio: auto;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .55);
+  will-change: width, height;
+}
+
+/* Lâmina leva ao centro; o card do centro abre na proporção original. */
+.coverflow.is-coverflow .cf-item[data-cf-active] .cf-frame { cursor: zoom-in; }
+.coverflow.is-coverflow .cf-item:not([data-cf-active]) .cf-frame { cursor: pointer; }
+
+/* O cursor não existe no toque — a etiqueta é a única pista de que abre. */
+.coverflow.is-coverflow .cf-item[data-cf-active] .cf-frame::after {
+  content: "Abrir";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: .45rem .7rem;
+  font: 400 .62rem/1 var(--mono);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: rgba(12, 12, 12, .82);
+  border-top: 1px solid var(--hairline);
+  border-left: 1px solid var(--hairline);
+  transition: color .2s var(--ease);
+}
+.coverflow.is-coverflow .cf-item[data-cf-active] .cf-frame:hover::after { color: var(--magenta); }
+.coverflow.is-coverflow .cf-item:not([data-cf-active]) .cf-frame:hover,
+.coverflow.is-coverflow .cf-item:focus-visible .cf-frame { border-color: var(--magenta); }
+
+.coverflow.is-coverflow.is-dragging { cursor: grabbing; }
+.coverflow.is-coverflow.is-dragging .cf-frame { cursor: grabbing; }
+
+/* ── leitor de metadados ───────────────────────────────────── */
+
+.cf-readout {
+  padding-inline: var(--gutter);
+  flex-shrink: 0;
+}
+
+.cf-name {
   font-family: var(--display);
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.45rem);
+  letter-spacing: -.02em;
+  line-height: 1.15;
+}
+
+.cf-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .5rem;
+  margin-top: .35rem;
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .06em;
+  color: var(--muted-2);
+}
+.cf-dot { opacity: .5; }
+.cf-ratio {
+  margin-left: auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── visualizador ──────────────────────────────────────────── */
+
+/* O palco corta tudo em 16:9; aqui a peça aparece na proporção real dela.
+   O tamanho vem do JS, que conhece a proporção e a viewport — aspect-ratio
+   sozinho não fecha com max-width e max-height ao mesmo tempo. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+}
+.lightbox[hidden] { display: none; }
+
+.lb-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 8, .94);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.lb-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  padding: var(--gutter);
+  max-width: 100%;
+}
+
+.lb-figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 100%;
+}
+
+.lb-media {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  max-width: 100%;
+}
+.lb-media > svg,
+.lb-media > img,
+.lb-media > video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lb-caption { max-width: 62ch; }
+
+.lb-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(1.05rem, 1.6vw, 1.35rem);
   letter-spacing: -.02em;
   line-height: 1.2;
 }
-.clip-tag {
-  display: block;
-  margin-top: .3rem;
-  font-family: var(--mono);
-  font-size: .68rem;
-  letter-spacing: .05em;
-  color: var(--muted-2);
-}
 
-.clip-card:hover,
-.clip-card:focus-visible {
-  border-color: var(--magenta);
-  background: var(--surface-2);
+.lb-close {
+  position: absolute;
+  top: calc(var(--gutter) - 1.4rem);
+  right: calc(var(--gutter) - 1.4rem);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--hairline-2);
+  color: var(--paper);
+  cursor: pointer;
+  transition: border-color .2s var(--ease), color .2s var(--ease);
 }
-.clip-card:hover .clip-bar,
-.clip-card:hover .clip-foot,
-.clip-card:focus-visible .clip-bar,
-.clip-card:focus-visible .clip-foot { border-color: rgba(255, 0, 128, .35); }
-.clip-card:hover .clip-play,
-.clip-card:focus-visible .clip-play { opacity: 1; transform: scale(1); }
+.lb-close svg { width: 16px; height: 16px; }
+.lb-close:hover,
+.lb-close:focus-visible { border-color: var(--magenta); color: var(--magenta); }
+
+@media (max-width: 900px) {
+  .lb-panel { gap: .9rem; }
+  .lb-close { top: .5rem; right: .5rem; }
+}
 
 /* ── sobre ─────────────────────────────────────────────────── */
 
@@ -718,31 +831,14 @@ img, svg { display: block; max-width: 100%; }
     border-top: 1px solid var(--hairline);
   }
   .reel-head { align-items: flex-start; flex-direction: column; gap: 1.25rem; }
-  .transport-btns { display: none; }
 
-  .reel-track {
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-left: var(--gutter);
-    padding-bottom: 1rem;
-    transform: none !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+  /* Sem pin o scroll não dirige nada, então arrasto e botões viram os únicos
+     controles — os botões de transporte ficam visíveis aqui. */
+  .coverflow {
+    flex: none;
+    height: clamp(280px, 52vh, 460px);
   }
-  .reel-track::-webkit-scrollbar { display: none; }
-  .reel-track::after {
-    content: "";
-    flex: 0 0 calc(var(--gutter) - clamp(1rem, 2.2vw, 2rem));
-  }
-  /* No celular a largura é fixa e a altura conta a proporção — o contrário
-     do desktop, porque aqui quem manda é a largura da tela. */
-  .clip { scroll-snap-align: start; }
-  .clip--916, .clip--45, .clip--11, .clip--169 { width: min(70vw, 330px); }
-  .clip-media { height: auto; }
-  .clip--916 .clip-media { aspect-ratio: 9 / 16; }
-  .clip--45  .clip-media { aspect-ratio: 4 / 5; }
-  .clip--11  .clip-media { aspect-ratio: 1 / 1; }
-  .clip--169 .clip-media { aspect-ratio: 16 / 9; }
+  .cf-item { width: min(74vw, 340px); }
 
   .spec-row { grid-template-columns: 1fr; gap: .35rem; }
 
@@ -768,11 +864,8 @@ img, svg { display: block; max-width: 100%; }
   [data-reveal] { opacity: 1; transform: none; }
   .hero-title .line[data-reveal] > span { transform: none; }
 
+  /* O coverflow não é montado: fica a faixa rolável simples. O leitor de
+     metadados continua funcionando, seguindo o card mais próximo do centro. */
   .reel-stage { position: static; height: auto; padding-block: 6rem 4rem; }
-  .reel-track {
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    transform: none !important;
-  }
-  .clip { scroll-snap-align: start; }
+  .coverflow { flex: none; height: auto; }
 }
