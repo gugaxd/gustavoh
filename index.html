@@ -19,7 +19,7 @@
 </head>
 <body id="topo">
 
-<a class="skip" href="#trabalho">Pular para o trabalho</a>
+<a class="skip" href="#clientes">Pular para os clientes</a>
 
 <header class="masthead">
   <a class="wordmark" href="#topo" aria-label="Guga — início">
@@ -51,7 +51,7 @@
       </h1>
       <p class="lede" data-reveal style="--d:320ms">Peças gráficas e edição de vídeo para marcas que vivem no feed.</p>
       <div class="hero-actions" data-reveal style="--d:420ms">
-        <a class="btn btn--solid" href="#trabalho">Ver o trabalho</a>
+        <a class="btn btn--solid" href="#clientes">Ver os clientes</a>
         <a class="btn btn--ghost" href="#sobre">Como eu trabalho</a>
       </div>
     </div>
@@ -59,48 +59,32 @@
     <p class="hero-hint" data-reveal style="--d:600ms" aria-hidden="true">Keep scrolling</p>
   </section>
 
-  <!-- ── TRABALHO ─────────────────────────────────────────────── -->
-  <!-- Coverflow. Os cards vêm de projects.js, que é gerado varrendo assets/;
-       o número de cards é sempre o número de peças na pasta. Sem JS ou com
-       movimento reduzido, a faixa vira um carrossel rolável comum. -->
-  <section class="reel" id="trabalho" data-clip data-label="Trabalho">
-    <div class="reel-stage">
-      <div class="reel-head">
-        <div class="reel-head-text">
-          <p class="eyebrow">Seleção</p>
-          <h2 class="section-title">Trabalho</h2>
-        </div>
-        <div class="transport">
-          <p class="counter"><span data-reel-index>01</span><span class="counter-slash">/</span><span data-reel-total>08</span></p>
-          <div class="transport-btns">
-            <button class="tbtn" type="button" data-reel-prev aria-label="Peça anterior">
-              <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M8 1.5 3.5 6 8 10.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
-            </button>
-            <button class="tbtn" type="button" data-reel-next aria-label="Próxima peça">
-              <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
+  <!-- ── CLIENTES ─────────────────────────────────────────────── -->
+  <!-- Grade só de logos. Para preencher um espaço, troque o <li> vazio por:
 
-      <div class="coverflow" data-coverflow tabindex="0" role="group"
-           aria-label="Galeria de peças — use as setas do teclado">
-        <!-- Os cards são construídos por main.js a partir de projects.js.
-             Para mudar as peças: mexa em assets/ e rode
-             node tools/build-projects.js -->
-        <ul class="cf-track" data-cf-track></ul>
-      </div>
+         <li class="client">
+           <img src="assets/clientes/nome-da-marca.svg" alt="Nome da marca">
+         </li>
 
-      <!-- Leitor de metadados: o que estiver no centro do palco. -->
-      <div class="cf-readout" aria-live="polite">
-        <p class="cf-name" data-cf-name></p>
-        <p class="cf-meta">
-          <span data-cf-tag></span>
-          <span class="cf-dot" aria-hidden="true">·</span>
-          <span class="cf-file" data-cf-file></span>
-          <span class="cf-ratio" data-cf-ratio></span>
-        </p>
-      </div>
+       SVG de preferência (escala sem perder nitidez); PNG com fundo
+       transparente também serve. Os logos são normalizados em tom claro pelo
+       CSS, então não precisam vir em cor. Acrescentar ou tirar <li> reflow a
+       grade sozinho. -->
+  <section class="clients" id="clientes" data-clip data-label="Clientes">
+    <div class="clients-inner">
+      <p class="eyebrow" data-reveal>Clientes</p>
+      <h2 class="section-title clients-title" data-reveal style="--d:60ms">Quem já passou pela timeline.</h2>
+
+      <ul class="client-grid" data-reveal style="--d:140ms">
+        <li class="client is-empty"></li>
+        <li class="client is-empty"></li>
+        <li class="client is-empty"></li>
+        <li class="client is-empty"></li>
+        <li class="client is-empty"></li>
+        <li class="client is-empty"></li>
+        <li class="client is-empty"></li>
+        <li class="client is-empty"></li>
+      </ul>
     </div>
   </section>
 
@@ -175,30 +159,6 @@
   <p class="footer-end">Fim da sequência</p>
 </footer>
 
-<!-- ── VISUALIZADOR (peça na proporção original) ──────────────── -->
-<div class="lightbox" data-lightbox hidden>
-  <div class="lb-backdrop" data-lb-close></div>
-  <div class="lb-panel" role="dialog" aria-modal="true" aria-labelledby="lb-title">
-    <button class="lb-close" type="button" data-lb-close aria-label="Fechar">
-      <svg viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor" stroke-width="1.4"/>
-      </svg>
-    </button>
-    <figure class="lb-figure">
-      <div class="lb-media" data-lb-media></div>
-      <figcaption class="lb-caption">
-        <p class="lb-name" id="lb-title" data-lb-name></p>
-        <p class="cf-meta">
-          <span data-lb-tag></span>
-          <span class="cf-dot" aria-hidden="true">·</span>
-          <span class="cf-file" data-lb-file></span>
-          <span class="cf-ratio" data-lb-ratio></span>
-        </p>
-      </figcaption>
-    </figure>
-  </div>
-</div>
-
 <!-- ── BARRA DE SEQUÊNCIA (navegação) ─────────────────────────── -->
 <nav class="sequence" aria-label="Navegação da página">
   <p class="sequence-tc"><span data-timecode>00:00:00:00</span></p>
@@ -208,7 +168,6 @@
   <p class="sequence-total">00:01:36:00</p>
 </nav>
 
-<script src="projects.js"></script>
 <script src="main.js"></script>
 </body>
 </html>
