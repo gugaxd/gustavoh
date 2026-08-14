@@ -307,39 +307,50 @@ img, svg { display: block; max-width: 100%; }
 
 /* gap de 1px sobre o fundo hairline: as divisas nunca sobram ao quebrar
    linha, e a grade fecha sozinha com qualquer número de logos. */
+/* As divisas vêm das células (direita + base) e não de um fundo atrás de um
+   gap: com fundo, toda sobra de faixa ou de última linha vira retângulo vazio
+   aceso. Assim a grade termina exatamente onde acaba o último logo, com
+   qualquer quantidade deles. Cada linha é desenhada uma única vez — se as
+   células tivessem borda dos quatro lados, as internas ficariam com o dobro
+   da opacidade das externas. */
 .client-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1px;
-  background: var(--hairline);
-  border: 1px solid var(--hairline);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  border-top: 1px solid var(--hairline);
+  border-left: 1px solid var(--hairline);
 }
 
+/* Respiro maior em cima e embaixo que nas laterais: quem sofre numa parede de
+   logos é a marca larga, que precisa de largura, não de altura. */
+/* Altura fixa em vez de proporção: com as células esticando para preencher a
+   fileira, um aspect-ratio faria a faixa crescer junto e virar um paredão de
+   ar em tela larga. */
 .client {
   display: grid;
   place-items: center;
-  aspect-ratio: 16 / 9;
-  padding: clamp(1.25rem, 3vw, 2.25rem);
-  background: var(--void);
+  min-height: clamp(96px, 9vw, 148px);
+  padding: clamp(1rem, 2.2vh, 1.75rem) clamp(.75rem, 1.6vw, 1.25rem);
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
 }
 
-/* O logo chega em qualquer cor; aqui ele é normalizado para o tom do site e
-   só ganha presença no hover. Assim uma parede de marcas diferentes não vira
-   uma colcha de retalhos. */
+/* Silhueta clara, preservando o alfa: brightness(0) achata tudo em preto e
+   invert(1) devolve branco. Assim funciona com logo de qualquer cor — inclusive
+   preto, que com um filtro de brilho simples sumiria neste fundo.
+   O teto de altura é o que iguala o peso ótico entre uma marca quadrada e um
+   letreiro 6:1. O ajuste caso a caso é multiplicador, não pixel fixo: em px
+   ele inverteria de sinal entre desktop e celular, onde o teto é menor. */
 .client img {
   max-width: 100%;
-  max-height: 100%;
+  max-height: calc(var(--logo-scale, 1) * clamp(26px, 3.2vw, 44px));
   width: auto;
   height: auto;
   object-fit: contain;
-  filter: grayscale(1) brightness(1.9);
-  opacity: .58;
-  transition: opacity .25s var(--ease), filter .25s var(--ease);
+  filter: brightness(0) invert(1);
+  opacity: .55;
+  transition: opacity .25s var(--ease);
 }
-.client:hover img {
-  filter: none;
-  opacity: 1;
-}
+.client:hover img { opacity: 1; }
 
 /* Espaço reservado, ainda sem logo. */
 .client.is-empty::after {
@@ -350,7 +361,7 @@ img, svg { display: block; max-width: 100%; }
 }
 
 @media (max-width: 560px) {
-  .client-grid { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+  .client-grid { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
 }
 
 /* ── sobre ─────────────────────────────────────────────────── */

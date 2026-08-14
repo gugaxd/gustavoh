@@ -60,30 +60,43 @@
   </section>
 
   <!-- ── CLIENTES ─────────────────────────────────────────────── -->
-  <!-- Grade só de logos. Para preencher um espaço, troque o <li> vazio por:
+  <!-- Grade só de logos. Um cliente por <li>; acrescentar ou tirar reflow a
+       grade sozinho, sem mexer no CSS.
 
          <li class="client">
-           <img src="assets/clientes/nome-da-marca.svg" alt="Nome da marca">
+           <img src="assets/marca.svg" alt="Marca" loading="lazy">
          </li>
 
-       SVG de preferência (escala sem perder nitidez); PNG com fundo
-       transparente também serve. Os logos são normalizados em tom claro pelo
-       CSS, então não precisam vir em cor. Acrescentar ou tirar <li> reflow a
-       grade sozinho. -->
+       SVG de preferência; PNG serve se tiver fundo transparente. O CSS
+       normaliza qualquer logo para silhueta clara, então a cor de origem não
+       importa. Logos muito largos ou muito quadrados podem precisar de um
+       ajuste fino de altura — use style="--logo-scale: .8" no <li> (multiplicador do teto de altura).
+
+       Para reservar um espaço ainda sem arquivo: <li class="client is-empty"></li> -->
   <section class="clients" id="clientes" data-clip data-label="Clientes">
     <div class="clients-inner">
       <p class="eyebrow" data-reveal>Clientes</p>
       <h2 class="section-title clients-title" data-reveal style="--d:60ms">Quem já passou pela timeline.</h2>
 
       <ul class="client-grid" data-reveal style="--d:140ms">
-        <li class="client is-empty"></li>
-        <li class="client is-empty"></li>
-        <li class="client is-empty"></li>
-        <li class="client is-empty"></li>
-        <li class="client is-empty"></li>
-        <li class="client is-empty"></li>
-        <li class="client is-empty"></li>
-        <li class="client is-empty"></li>
+        <li class="client">
+          <img src="assets/finvity.svg" alt="Finvity" loading="lazy">
+        </li>
+        <!-- Único símbolo circular da parede. Na mesma altura dos letreiros
+             ele ocupa muito menos campo visual (41px de largura contra 131 a
+             186), então precisa ser mais alto para pesar igual. -->
+        <li class="client" style="--logo-scale: 1.55">
+          <img src="assets/gjr.svg" alt="GJR" loading="lazy">
+        </li>
+        <li class="client">
+          <img src="assets/Lumatec.png" alt="Lumatec" loading="lazy" decoding="async">
+        </li>
+        <li class="client">
+          <img src="assets/mosso.png" alt="Mosso" loading="lazy" decoding="async">
+        </li>
+        <li class="client">
+          <img src="assets/onzzi.svg" alt="Onzzi" loading="lazy">
+        </li>
       </ul>
     </div>
   </section>
