@@ -49,6 +49,11 @@ body {
   font-family: var(--body);
   font-size: clamp(1rem, .96rem + .18vw, 1.0625rem);
   line-height: 1.62;
+  /* Sem viúva: o navegador evita deixar uma palavra sozinha na última linha.
+     Herda para o site todo; títulos com balance continuam com balance.
+     shortcut: navegador sem suporte quebra normal, sem erro — se precisar
+     garantir em todos, trocar o último espaço de cada texto por &nbsp;. */
+  text-wrap: pretty;
   font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
 }
