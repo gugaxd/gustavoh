@@ -16,6 +16,162 @@
   var clamp = function (v, min, max) { return v < min ? min : v > max ? max : v; };
   var pad = function (n, size) { return String(n).padStart(size || 2, '0'); };
 
+  /* ── tela de carregamento ────────────────────────────────── */
+
+  // Tiles Loader (Originkit), portado do componente React para JS puro.
+  var LOADER_MIN_S = 2.5;        // duração mínima da contagem até 100%, em segundos
+  var LOADER_MAX_S = 8;          // se algo travar o carregamento, segue mesmo assim
+  var LOADER_REVEAL_S = 1.6;     // quadrados encolhendo e revelando o site
+  var LOADER_FADE_S = 0.35;
+  var LOADER_SHORT_SIDE = 7;     // quantos quadrados no lado menor da tela
+  var LOADER_INK_WINDOW = 0.04;
+
+  var seg = function (x, a, b) { return clamp((x - a) / Math.max(1e-6, b - a), 0, 1); };
+  var outCubic = function (x) { return 1 - Math.pow(1 - x, 3); };
+  var inOutCubic = function (x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+
+  // Sorteio com semente: a ordem em que os quadrados acendem é sempre a mesma.
+  function seeded(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a = (a + 0x6d2b79f5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Curva de "carregamento" em pedaços irregulares, para a contagem não
+  // subir em linha reta; chega a 1 exatamente em loadS.
+  function loadCurve(seed, loadS) {
+    var r = seeded(seed);
+    var k = Math.min(1, loadS / 4.4);
+    var chunks = [];
+    var total = 0;
+    for (var i = 0; i < 7; i++) {
+      var size = 0.4 + r() * 1.2;
+      chunks.push({ size: size, start: r() * 0.78 * loadS, len: (0.25 + r() * 0.9) * k });
+      total += size;
+    }
+    chunks.push({ size: total * 0.12, start: loadS - 0.45 * k, len: 0.45 * k });
+    total *= 1.12;
+    return function (t) {
+      if (t >= loadS) return 1;
+      var p = 0;
+      chunks.forEach(function (c) {
+        var x = clamp((t - c.start) / Math.max(1e-3, c.len), 0, 1);
+        p += c.size * x * x * (3 - 2 * x);
+      });
+      return Math.min(0.999, p / total);
+    };
+  }
+
+  // Quanto da página carregou de verdade: a contagem nunca passa disso.
+  function realLoad() {
+    if (document.readyState === 'complete') return 1;
+    var imgs = document.images;
+    var done = 0;
+    for (var i = 0; i < imgs.length; i++) if (imgs[i].complete) done++;
+    var frac = imgs.length ? done / imgs.length : 1;
+    var fonts = document.fonts && document.fonts.status === 'loaded' ? 1 : 0;
+    return Math.min(0.95, 0.15 + 0.6 * frac + 0.2 * fonts);
+  }
+
+  // Chama `onReveal` quando os quadrados começam a encolher, para a abertura
+  // animar enquanto aparece.
+  // shortcut: a grade é calculada uma vez; se a tela girar durante os poucos
+  // segundos do carregamento, os quadrados ficam do tamanho antigo.
+  function initLoader(onReveal) {
+    var root = document.querySelector('[data-loader]');
+    if (!root || !root.offsetWidth) { onReveal(); return; }
+
+    var countEl = root.querySelector('[data-loader-count]');
+    var numEl = root.querySelector('[data-loader-num]');
+    var reduced = reduceMotion.matches;
+
+    var w = root.offsetWidth;
+    var h = root.offsetHeight;
+    var cell = Math.min(w, h) / LOADER_SHORT_SIDE;
+    var cols = Math.max(1, Math.round(w / cell));
+    var rows = Math.max(1, Math.round(h / cell));
+    var count = cols * rows;
+
+    var rand = seeded(count * 7919 + 13);
+    var tiles = [];
+    var papers = [];
+    var order = [];
+    var delay = [];
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < count; i++) {
+      var c = i % cols;
+      var r = Math.floor(i / cols);
+      var tile = document.createElement('div');
+      tile.className = 'loader-tile';
+      tile.style.left = (c * 100 / cols) + '%';
+      tile.style.top = (r * 100 / rows) + '%';
+      // +1px evita frestas entre os quadrados por arredondamento.
+      tile.style.width = 'calc(' + (100 / cols) + '% + 1px)';
+      tile.style.height = 'calc(' + (100 / rows) + '% + 1px)';
+      var paper = document.createElement('i');
+      tile.appendChild(paper);
+      frag.appendChild(tile);
+      tiles.push(tile);
+      papers.push(paper);
+      order.push(rand() * (1 - LOADER_INK_WINDOW));
+      // Diagonal: começa no canto de baixo à esquerda e termina no de cima à direita.
+      delay.push(0.5 * (cols > 1 ? c / (cols - 1) : 0) + 0.5 * (rows > 1 ? (rows - 1 - r) / (rows - 1) : 0));
+    }
+    root.insertBefore(frag, countEl);
+    root.classList.add('is-ready');
+
+    var loadS = reduced ? 0.6 : Math.max(0.5, LOADER_MIN_S);
+    var revealS = reduced ? 0.4 : LOADER_REVEAL_S;
+    var curve = loadCurve(7, loadS);
+    var t = 0;
+    var progress = 0;
+    var revealAt = -1;
+    var last = -1;
+    var shown = '';
+
+    function draw() {
+      var reveal = revealAt < 0 ? 0 : clamp((t - revealAt) / revealS, 0, 1);
+      for (var i = 0; i < count; i++) {
+        papers[i].style.opacity = String(1 - seg(progress, order[i], order[i] + LOADER_INK_WINDOW));
+        var e = inOutCubic(seg(reveal, delay[i] * 0.55, delay[i] * 0.55 + 0.45));
+        tiles[i].style.transform = 'scale(' + (1 - e) + ')';
+      }
+      var digits = String(Math.round(progress * 100));
+      if (digits !== shown) { numEl.textContent = digits; shown = digits; }
+      countEl.style.opacity = String(outCubic(seg(t, 0.1, 0.8)) * (1 - seg(reveal, 0, 0.15)));
+    }
+
+    function tick(now) {
+      var dt = last < 0 ? 0 : Math.min(0.05, (now - last) / 1000);
+      last = now;
+      t += dt;
+      if (revealAt < 0) {
+        var real = t > LOADER_MAX_S ? 1 : realLoad();
+        var target = Math.min(curve(t), real);
+        progress = target >= 1 ? 1 : Math.min(target, progress + dt * 1.5);
+        if (progress >= 1 && t >= loadS) {
+          revealAt = t;
+          onReveal();
+        }
+      }
+      draw();
+      if (revealAt >= 0 && t - revealAt >= revealS) {
+        root.classList.add('is-done');
+        setTimeout(function () { root.remove(); }, LOADER_FADE_S * 1000);
+        return;
+      }
+      requestAnimationFrame(tick);
+    }
+
+    draw();
+    requestAnimationFrame(tick);
+  }
+
   /* ── reveals ─────────────────────────────────────────────── */
 
   function initReveals() {
@@ -175,7 +331,7 @@
   /* ── loop ────────────────────────────────────────────────── */
 
   function start() {
-    initReveals();
+    initLoader(initReveals);
     initCopy();
 
     var sequence = initSequence();

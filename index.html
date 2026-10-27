@@ -12,12 +12,25 @@
 <meta property="og:description" content="Peças gráficas e edição de vídeo para marcas que vivem no feed.">
 <meta property="og:type" content="website">
 
+<!-- Marca que o JS está ligado: só assim a tela de carregamento aparece. -->
+<script>document.documentElement.classList.add('js');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&family=Urbanist:ital,wght@0,300..700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&family=Urbanist:ital,wght@0,300..700;1,400&family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body id="topo">
+
+<!-- ── TELA DE CARREGAMENTO ──────────────────────────────────
+     Tiles Loader (Originkit), convertido de React para JS puro.
+     Os quadrados são criados pelo main.js conforme o tamanho da tela;
+     aqui fica só o contador de porcentagem. Tempo e cores: veja
+     "tela de carregamento" no começo do main.js e no styles.css. -->
+<div class="loader" data-loader aria-hidden="true">
+  <div class="loader-count" data-loader-count>
+    <span><span data-loader-num>0</span><span class="loader-pct">%</span></span>
+  </div>
+</div>
 
 <a class="skip" href="#clientes">Pular para os clientes</a>
 
@@ -91,7 +104,9 @@
         <li class="client">
           <img src="assets/Lumatec.png" alt="Lumatec" loading="lazy" decoding="async">
         </li>
-        <li class="client">
+        <!-- Letreiro cursivo e quase quadrado: na altura padrão ficava miúdo
+             perto dos outros, por isso sobe um pouco. -->
+        <li class="client" style="--logo-scale: 1.3">
           <img src="assets/mosso.png" alt="Mosso" loading="lazy" decoding="async">
         </li>
         <li class="client">

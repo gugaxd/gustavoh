@@ -638,6 +638,69 @@ img, svg { display: block; max-width: 100%; }
   .footer { flex-direction: column; gap: .35rem; }
 }
 
+/* ── tela de carregamento (Tiles Loader, Originkit) ────────── */
+
+/* A tela começa toda em --void e cada quadrado vai acendendo em --paper
+   conforme a página carrega; no fim os quadrados encolhem em diagonal e
+   revelam o site. Para trocar as cores, troque as duas variáveis abaixo. */
+.loader {
+  --loader-start: var(--void);
+  --loader-fill: var(--paper);
+  display: none;
+}
+/* Só existe com JS ligado: sem script, o site abre direto. */
+.js .loader {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: block;
+  overflow: hidden;
+  background: var(--loader-start);
+  transition: opacity .35s ease;
+}
+/* Depois que os quadrados existem, eles cobrem a tela; o fundo sai para
+   o site aparecer quando eles encolhem. */
+.js .loader.is-ready { background: transparent; }
+.js .loader.is-done { opacity: 0; pointer-events: none; }
+
+.loader-tile {
+  position: absolute;
+  background: var(--loader-fill);
+}
+.loader-tile > i {
+  position: absolute;
+  inset: 0;
+  background: var(--loader-start);
+}
+
+/* "difference" inverte o número sobre o que estiver embaixo: claro sobre o
+   escuro, escuro sobre os quadrados acesos. */
+.loader-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  mix-blend-mode: difference;
+  color: #fff;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: "Instrument Serif", "Times New Roman", Times, serif;
+  font-weight: 400;
+  font-size: min(30vh, 40vw);
+  line-height: 1;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+}
+.loader-count > span { display: inline-flex; align-items: flex-start; }
+.loader-pct {
+  font-size: .3em;
+  font-style: italic;
+  margin-top: .9em;
+  margin-left: .08em;
+}
+
 /* ── reduced motion ────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
